@@ -26,3 +26,8 @@
   <img src="https://github.com/user-attachments/assets/b4e9b3d2-2aa8-4292-9558-f8d3030e14f7" width="350"/>
   <img src="https://github.com/user-attachments/assets/c708d3b4-e48c-4127-97ca-fc8835e397a0" width="350"/>
 </p>
+
+## Shop Chat
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/fcb301b2-e850-4c86-ad70-68037ca34100" width="350"/>
+</p>
