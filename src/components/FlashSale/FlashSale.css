@@ -1,0 +1,78 @@
+.flash-sale {
+  background: white;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 2px;
+  border-top: 3px solid #f53d2d;
+}
+
+.flash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #efefef;
+}
+
+.flash-title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flash-fire {
+  font-size: 24px;
+  color: #f53d2d;
+}
+
+.flash-title {
+  color: #f53d2d;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.flash-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid #efefef;
+}
+
+.timer-label {
+  color: #999;
+  font-size: 12px;
+}
+
+.timer {
+  background: #f53d2d;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  min-width: 100px;
+  text-align: center;
+}
+
+.view-all {
+  font-size: 14px;
+  cursor: pointer;
+  color: #f53d2d;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.view-all:hover {
+  text-decoration: underline;
+}
+
+.flash-products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  width: 100%;
+}

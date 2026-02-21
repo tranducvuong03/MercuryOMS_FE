@@ -1,0 +1,467 @@
+/* Shop Detail Page */
+.shop-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f5f5f5;
+  min-height: calc(100vh - 100px);
+}
+
+.back-button-shop {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 20px;
+  transition: 0.2s ease;
+}
+
+.back-button-shop:hover {
+  background: #fafafa;
+  border-color: #f53d2d;
+  color: #f53d2d;
+}
+
+/* Not Found */
+.not-found {
+  background: white;
+  padding: 60px 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.not-found h2 {
+  color: #999;
+  margin-bottom: 20px;
+}
+
+.not-found .back-button {
+  background: #f53d2d;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Shop Header */
+.shop-detail-header {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 30px;
+  align-items: start;
+}
+
+.shop-logo-large {
+  font-size: 80px;
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #f53d2d 0%, #ff6b3d 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(245, 61, 45, 0.15);
+}
+
+.shop-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.shop-name-verified {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shop-header-info h1 {
+  font-size: 28px;
+  margin: 0;
+  color: #222;
+  font-weight: 700;
+}
+
+.verified-badge {
+  background: #4caf50;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shop-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f53d2d;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.shop-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-btn {
+  padding: 12px 24px;
+  border: none;
+  background: #f53d2d;
+  color: white;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.action-btn:hover {
+  background: #d32916;
+}
+
+/* Shop Info Details */
+.shop-info-details {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-label {
+  font-size: 13px;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #222;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Tabs */
+.shop-tabs {
+  display: flex;
+  gap: 0;
+  background: white;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 16px 20px;
+  border: none;
+  background: white;
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #f53d2d;
+}
+
+.tab-btn.active {
+  color: #f53d2d;
+  border-bottom-color: #f53d2d;
+}
+
+/* Tab Content */
+.shop-tab-content {
+  background: white;
+  padding: 30px;
+  border-radius: 0 0 8px 8px;
+  min-height: 500px;
+}
+
+/* Products Section */
+.products-grid-shop {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.empty-message {
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+  font-size: 16px;
+}
+
+/* Vouchers Section */
+.vouchers-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.voucher-card {
+  border: 2px solid #f53d2d;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  transition: 0.2s ease;
+}
+
+.voucher-card:hover {
+  box-shadow: 0 4px 12px rgba(245, 61, 45, 0.15);
+  transform: translateY(-2px);
+}
+
+.voucher-header {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #fff5f5 0%, #fafafa 100%);
+}
+
+.voucher-discount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f53d2d;
+  color: white;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.discount-value-percent,
+.discount-value-fixed {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.voucher-info h3 {
+  font-size: 16px;
+  color: #222;
+  margin: 0 0 4px 0;
+  font-weight: 700;
+}
+
+.voucher-description {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.voucher-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #efefef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.voucher-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-item {
+  color: #666;
+}
+
+.detail-item strong {
+  color: #222;
+  font-weight: 600;
+}
+
+.expiry-date {
+  color: #f53d2d;
+  font-weight: 600;
+}
+
+.copy-code-btn {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  background: #f53d2d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.copy-code-btn:hover {
+  background: #d32916;
+}
+
+/* Info Section */
+.info-box {
+  background: #fafafa;
+  padding: 24px;
+  border-radius: 8px;
+}
+
+.info-box h3 {
+  font-size: 18px;
+  color: #222;
+  margin: 0 0 20px 0;
+  font-weight: 700;
+}
+
+.info-details {
+  display: grid;
+  gap: 16px;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 20px;
+  padding: 12px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #efefef;
+}
+
+.detail-row .label {
+  font-weight: 600;
+  color: #666;
+  font-size: 13px;
+}
+
+.detail-row .value {
+  color: #222;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .shop-detail-header {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .shop-logo-large {
+    width: 100px;
+    height: 100px;
+    font-size: 60px;
+    margin: 0 auto;
+  }
+
+  .shop-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .products-grid-shop {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .vouchers-list {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-row {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-tabs {
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .shop-detail-container {
+    padding: 12px;
+  }
+
+  .shop-detail-header {
+    padding: 20px 12px;
+  }
+
+  .shop-logo-large {
+    width: 80px;
+    height: 80px;
+    font-size: 40px;
+  }
+
+  .shop-header-info h1 {
+    font-size: 22px;
+  }
+
+  .shop-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-box {
+    padding: 10px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .products-grid-shop {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shop-tab-content {
+    padding: 16px 12px;
+  }
+}

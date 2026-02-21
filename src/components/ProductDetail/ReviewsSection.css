@@ -1,0 +1,161 @@
+.image-upload {
+  margin-top: 12px;
+}
+
+.upload-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.dropzone {
+  border: 1px dashed #e6e6e6;
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  background: #fff;
+}
+
+.dropzone:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-color: #d0d0d0;
+}
+
+.dropzone:active {
+  opacity: 0.95;
+}
+
+.file-input {
+  display: none;
+}
+
+.dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+  gap: 6px;
+}
+
+.dropzone .icon {
+  font-size: 20px;
+}
+
+.dropzone .text {
+  color: #333;
+  font-size: 13px;
+}
+
+.dropzone .select-link {
+  color: #ff5a1f;
+  font-weight: 700;
+}
+
+.dropzone .hint {
+  color: #8f8f8f;
+  font-size: 12px;
+}
+
+.preview-images {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.preview-item {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Review filter (Shopee-like) */
+.review-filter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0;
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+.filter-btn {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  color: #333;
+  padding: 6px 10px;
+  border-radius: 18px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-btn:hover {
+  transform: translateY(-1px);
+  border-color: #e0e0e0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+
+.filter-btn.active {
+  background: #ff5a1f;
+  color: #fff;
+  border-color: #ff5a1f;
+  box-shadow: 0 6px 18px rgba(255,90,31,0.15);
+}
+
+.filter-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255,90,31,0.08);
+}
+
+@media (max-width: 480px) {
+  .filter-btn { padding: 6px 8px; font-size: 12px }
+}
+
+.remove-btn:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+/* Small responsive tweak */
+@media (max-width: 480px) {
+  .dropzone {
+    padding: 10px;
+  }
+  .preview-item {
+    width: 60px;
+    height: 60px;
+  }
+}
