@@ -18,3 +18,10 @@
   <img src="https://github.com/user-attachments/assets/533dafba-3095-4138-a3f3-c25a1a6af9e0" width="400"/>
   <img src="https://github.com/user-attachments/assets/63f31393-eb03-4e6f-9b9b-4459ab61078b" width="400"/>
 </p>
+
+## Product Detail Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a2f0bd45-e881-4f68-a102-835418fe5935" width="350"/>
+  <img src="https://github.com/user-attachments/assets/6fb2e094-2de2-4b9f-9291-3668c4ad60eb" width="350"/>
+  <img src="https://github.com/user-attachments/assets/b4e9b3d2-2aa8-4292-9558-f8d3030e14f7" width="350"/>
+</p>
