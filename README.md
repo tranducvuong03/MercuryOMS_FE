@@ -17,3 +17,12 @@
 <p align="center">
   <img src="https://github.com/user-attachments/assets/ad5f6c37-4569-442a-903b-589af5019e18" width="400"/>
 </p>
+
+## Products Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/533dafba-3095-4138-a3f3-c25a1a6af9e0" width="400"/>
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/63f31393-eb03-4e6f-9b9b-4459ab61078b" width="400"/>
+</p>
