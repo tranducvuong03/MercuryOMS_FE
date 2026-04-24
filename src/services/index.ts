@@ -2,7 +2,13 @@
 // Import từ đây khi cần sử dụng các API functions
 
 // Config
-export { API_BASE_URL, getHeaders } from "./config"
+export { API_BASE_URL, getHeaders } from "./apiClient"
+export {
+  // createSignalRConnection,
+  // ensureSignalRStarted,
+  // stopSignalRConnection,
+  // getSignalRHeaders
+} from "./signalr"
 
 // Products API
 export {

@@ -1,4 +1,5 @@
 import type { Review } from "./review"
+import type { Shop } from "./shop"
 
 export interface Variant {
   id: string
@@ -6,34 +7,6 @@ export interface Variant {
   size?: string
   images: string[]
   stock: number
-}
-
-export interface Voucher {
-  id: string
-  code: string
-  title: string
-  description: string
-  discount: number
-  discountType: "percent" | "fixed"
-  minPurchase: number
-  maxDiscount?: number
-  expiryDate: string
-  quantity: number
-}
-
-export interface Shop {
-  id: number
-  name: string
-  logo?: string
-  rating: number
-  followers: number
-  products: number
-  responseRate: number
-  responseTime: string
-  verified: boolean
-  vouchers?: Voucher[]
-  description?: string
-  joinedDate?: string
 }
 
 export interface Product {
@@ -53,4 +26,30 @@ export interface Product {
   reviews?: Review[]
   variants?: Variant[]
   shop?: Shop
+}
+
+export interface ProductResponse {
+  id: string
+  name: string
+  description?: string
+
+  basePrice: number
+  originalPrice?: number
+
+  isActive: boolean
+  thumbnailUrl?: string
+
+  sold: number
+  rating: number
+  reviewCount: number
+
+  badge?: string
+  discount?: number
+}
+
+export interface PaginatedResponse<T> {
+  items: T[]
+  pageIndex: number
+  pageSize: number
+  totalItems: number
 }

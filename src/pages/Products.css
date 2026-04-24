@@ -76,7 +76,7 @@
   transition: all 0.2s ease;
 }
 
-.filter-section:first-child .category-item input:checked + span {
+.filter-section:first-child .category-item input:checked+span {
   background: #f53d2d;
   color: white;
   border-color: #f53d2d;
@@ -171,8 +171,8 @@
   color: #666;
 }
 
-.rating-item input:checked + .stars + .rating-text,
-.rating-item input:checked + .rating-text {
+.rating-item input:checked+.stars+.rating-text,
+.rating-item input:checked+.rating-text {
   color: #f53d2d;
   font-weight: 600;
 }
@@ -208,7 +208,7 @@
   color: #666;
 }
 
-.promotion-item input:checked + span {
+.promotion-item input:checked+span {
   color: #f53d2d;
   font-weight: 600;
 }
@@ -442,8 +442,8 @@
   font-size: 18px;
   color: #999;
   margin: 0 0 20px 0;
-  }
 }
+
 
 /* ==================== RESPONSIVE ====================*/
 @media (max-width: 768px) {

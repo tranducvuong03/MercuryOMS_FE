@@ -2,7 +2,7 @@
 // Sử dụng cho sau này thay thế dữ liệu mẫu
 // Bỏ comment khi sẵn sàng tích hợp backend
 
-import { API_BASE_URL, getHeaders } from "./config"
+import { API_BASE_URL, getHeaders } from "./apiClient"
 
 // Lấy thông tin shop
 // export const fetchShopInfo = async (shopId: number) => {
