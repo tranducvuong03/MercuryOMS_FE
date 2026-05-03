@@ -1,0 +1,84 @@
+.shipper-message-section {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.shipper-message-section .section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.shipper-message-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.message-input-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.message-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s ease;
+  background: #fafafa;
+}
+
+.message-textarea:focus {
+  border-color: #ff6b6b;
+  background: #fff;
+}
+
+.char-counter {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 12px;
+  color: #999;
+  background: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.message-textarea:focus + .char-counter {
+  color: #666;
+}
+
+.message-hint {
+  margin: 12px 0 0 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  padding: 12px;
+  background: #f9f9f9;
+  border-left: 3px solid #ffc107;
+  border-radius: 0 4px 4px 0;
+}
+
+@media (max-width: 768px) {
+  .message-textarea {
+    font-size: 16px;
+  }
+
+  .message-hint {
+    font-size: 12px;
+  }
+}

@@ -23,10 +23,11 @@ const InfoSection: React.FC<Props> = ({
   added,
   handleAddToCart
 }) => {
-  const savingPrice = product.originalPrice ? product.originalPrice - product.price : 0
 
   const handleSelectVariant = (variantId: string) => {
-    setSelectedVariantId(variantId)
+    setSelectedVariantId(prev =>
+      prev === variantId ? "" : variantId
+    )
   }
 
   const handleQuantityChange = (type: "increase" | "decrease") => {
@@ -36,6 +37,20 @@ const InfoSection: React.FC<Props> = ({
       setQuantity(q => q - 1)
     }
   }
+
+  const selectedVariant = product.variants?.find(v => v.id === selectedVariantId)
+  const displayOriginalPrice =
+    selectedVariant ? selectedVariant.originalPrice : product.originalPrice
+
+  const displayDiscountPrice =
+    selectedVariant
+      ? selectedVariant.discountPrice
+      : product.discountPrice
+
+  const savingPrice =
+    displayOriginalPrice && displayDiscountPrice
+      ? displayOriginalPrice - displayDiscountPrice
+      : 0
 
   return (
     <div className="product-info-section">
@@ -50,16 +65,22 @@ const InfoSection: React.FC<Props> = ({
       <div className="price-section">
         <div className="price-main">
           <span className="currency">₫</span>
-          <span className="price-value">{product.price.toLocaleString().replace(/,/g, '.')}</span>
+          <span className="price-value">
+            {(displayDiscountPrice ?? displayOriginalPrice)
+              ?.toLocaleString()
+              .replace(/,/g, ".")}
+          </span>
         </div>
-        <div className="price-sub">
-          {product.originalPrice && (
-            <>
-              <span className="original-price">₫{product.originalPrice.toLocaleString().replace(/,/g, '.')}</span>
-              <span className="saving">Tiết kiệm ₫{savingPrice.toLocaleString().replace(/,/g, '.')}</span>
-            </>
-          )}
-        </div>
+        {displayDiscountPrice && displayOriginalPrice && (
+          <div className="price-sub">
+            <span className="original-price">
+              ₫{displayOriginalPrice.toLocaleString().replace(/,/g, ".")}
+            </span>
+            <span className="saving">
+              Tiết kiệm ₫{savingPrice.toLocaleString().replace(/,/g, ".")}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="specifications">
@@ -83,7 +104,7 @@ const InfoSection: React.FC<Props> = ({
 
       {product.variants && product.variants.length > 0 && (
         <div className="variant-section">
-          <div className="variant-label">Màu sắc:</div>
+          <div className="variant-label">{product.variants.some(v => v.size) ? "Size:" : "Màu sắc:"}</div>
           <div className="variant-options">
             {product.variants.map(variant => (
               <button
@@ -91,9 +112,9 @@ const InfoSection: React.FC<Props> = ({
                 className={`variant-btn ${selectedVariantId === variant.id ? "active" : ""}`}
                 onClick={() => handleSelectVariant(variant.id)}
                 disabled={variant.stock === 0}
-                title={variant.stock === 0 ? "Hết hàng" : variant.color}
+                title={variant.stock === 0 ? "Hết hàng" : (variant.size || variant.color)}
               >
-                {variant.color}
+                {variant.size || variant.color}
               </button>
             ))}
           </div>
@@ -110,15 +131,23 @@ const InfoSection: React.FC<Props> = ({
       </div>
 
       <div className="action-buttons">
-        <button className="btn btn-cart" onClick={handleAddToCart}>
+        <button
+          className="btn btn-cart"
+          onClick={handleAddToCart}
+          disabled={!selectedVariantId}
+        >
           <FaShoppingCart />
           <span> </span>
           Thêm vào giỏ
         </button>
         <button className="btn btn-buy">Mua ngay</button>
       </div>
-
-      {added && <div className="success-message">✓ Đã thêm vào giỏ hàng</div>}
+      {!selectedVariantId && (
+        <div style={{ color: "red", marginTop: "8px" }}>
+          Vui lòng chọn phân loại hàng
+        </div>
+      )}
+      {added && <div className="success-message">Đã thêm vào giỏ hàng</div>}
 
       <div className="shipping-info">
         <div className="shipping-item">

@@ -1,0 +1,1 @@
+export type ExternalProvider = "Google" | "Facebook"

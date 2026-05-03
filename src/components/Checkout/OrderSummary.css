@@ -1,0 +1,145 @@
+.order-summary {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 24px;
+  position: sticky;
+  top: 20px;
+}
+
+.order-summary h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.summary-costs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+}
+
+.cost-row.discount {
+  color: #ff6b6b;
+}
+
+.cost-value {
+  font-weight: 600;
+}
+
+.summary-divider {
+  height: 2px;
+  background: #f0f0f0;
+  margin: 8px 0;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.total-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff6b6b;
+}
+
+.btn-place-order {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #f53d2d 0%, #f63c2c 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.btn-place-order:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d32916 0%, #c22313 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 61, 45, 0.3);
+}
+
+.btn-place-order:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-place-order:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.policy-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.policy-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #666;
+}
+
+.policy-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #e8f5e9;
+  color: #2d5016;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
+  .order-summary {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .order-summary {
+    position: sticky;
+    bottom: 0;
+    top: auto;
+    border: none;
+    border-top: 1px solid #e5e5e5;
+    border-radius: 0;
+  }
+
+  .btn-place-order {
+    padding: 14px;
+    font-size: 14px;
+  }
+}

@@ -6,7 +6,8 @@ import {
   FaTicketAlt,
   FaStore,
   FaCog,
-  FaArrowLeft
+  FaArrowLeft,
+  FaMapMarkerAlt
 } from "react-icons/fa"
 
 import "./Profile.css"
@@ -17,6 +18,7 @@ import ProfileOrders from "../components/Profile/ProfileOrders"
 import ProfileVouchers from "../components/Profile/ProfileVouchers"
 import ProfileFollowedShops from "../components/Profile/ProfileFollowedShops"
 import ProfileSettings from "../components/Profile/ProfileSettings"
+import ProfileAddresses from "../components/Profile/ProfileAddresses"
 
 interface User {
   name: string
@@ -120,6 +122,15 @@ const Profile = () => {
             </button>
 
             <button
+              className={`menu-item ${activeTab === "addresses" ? "active" : ""}`}
+              onClick={() => setActiveTab("addresses")}
+            >
+              <FaMapMarkerAlt className="menu-icon" />
+              <span> </span>
+              Quản lý địa chỉ
+            </button>
+
+            <button
               className={`menu-item ${activeTab === "settings" ? "active" : ""}`}
               onClick={() => setActiveTab("settings")}
             >
@@ -141,6 +152,7 @@ const Profile = () => {
               onUnfollow={handleUnfollow}
             />
           )}
+          {activeTab === "addresses" && <ProfileAddresses />}
           {activeTab === "settings" && <ProfileSettings />}
         </div>
       </div>

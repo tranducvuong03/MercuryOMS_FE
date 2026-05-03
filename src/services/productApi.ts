@@ -1,4 +1,6 @@
 import type { PaginatedResponse, ProductResponse } from "../types/product"
+import type { ProductDetailResponse } from "../types/productVariant"
+import type { Result } from "../types/result"
 import { request } from "./apiClient"
 
 export interface ProductFilterRequest {
@@ -25,17 +27,14 @@ export const productApi = {
         .map(([k, v]) => [k, String(v)])
     ).toString()
 
-    return request(`/products?${query}`) as Promise<{
-      isSuccess: boolean
-      message?: string
-      value: PaginatedResponse<ProductResponse>
-    }>
+    return request(`/products?${query}`) as Promise<
+      Result<PaginatedResponse<ProductResponse>>
+    >
   },
 
-  getById: (id: string) => {
-    return request(`/products/${id}`) as Promise<{
-      isSuccess: boolean
-      value: ProductResponse
-    }>
+  getDetail: (id: string) => {
+    return request(`/products/${id}/detail`) as Promise<
+      Result<ProductDetailResponse>
+    >
   }
 }

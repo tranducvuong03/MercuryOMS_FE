@@ -41,12 +41,14 @@ const ProductGridCard = ({ product }: ProductGridCardProps) => {
 
         <div className="product-price">
           <span className="price">
-            ₫{product.basePrice.toLocaleString().replace(/,/g, ".")}
+            ₫{(product.discountPrice ?? product.originalPrice ?? 0)
+              .toLocaleString()
+              .replace(/,/g, ".")}
           </span>
 
-          {product.originalPrice && (
+          {product.discountPrice && (
             <span className="original-price">
-              ₫{product.originalPrice.toLocaleString().replace(/,/g, ".")}
+              ₫{product.originalPrice?.toLocaleString().replace(/,/g, ".")}
             </span>
           )}
         </div>

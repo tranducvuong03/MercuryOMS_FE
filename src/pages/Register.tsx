@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import "./Auth.css"
+import { authApi } from "../services/auth"
 
 const Register = () => {
   const navigate = useNavigate()
@@ -11,6 +12,7 @@ const Register = () => {
     confirmPassword: ""
   })
   const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -25,7 +27,7 @@ const Register = () => {
     setError("")
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const { name, email, password, confirmPassword } = formData
@@ -50,15 +52,37 @@ const Register = () => {
       return
     }
 
-    // Simulate register success
-    const userData = { email, name }
-    localStorage.setItem("user", JSON.stringify(userData))
-    window.dispatchEvent(new CustomEvent("userLoggedIn", { detail: userData }))
-    navigate("/")
+    try {
+      setLoading(true)
+
+      const res = await authApi.register({
+        email,
+        password,
+        fullName: name
+      })
+
+      if (!res.isSuccess) {
+        setError(res.message || "Đăng ký thất bại")
+        return
+      }
+
+      // auto login UX giả lập (tuỳ backend có trả token hay không)
+      const userData = { email, name }
+
+      localStorage.setItem("user", JSON.stringify(userData))
+      window.dispatchEvent(
+        new CustomEvent("userLoggedIn", { detail: userData })
+      )
+
+      navigate("/login")
+    } catch (err: any) {
+      setError(err.message || "Có lỗi xảy ra")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleFacebookLogin = () => {
-    // Simulate Facebook login
     const userData = { email: "user@facebook.com", name: "Facebook User" }
     localStorage.setItem("user", JSON.stringify(userData))
     window.dispatchEvent(new CustomEvent("userLoggedIn", { detail: userData }))
@@ -66,7 +90,6 @@ const Register = () => {
   }
 
   const handleGoogleLogin = () => {
-    // Simulate Google login
     const userData = { email: "user@gmail.com", name: "Google User" }
     localStorage.setItem("user", JSON.stringify(userData))
     window.dispatchEvent(new CustomEvent("userLoggedIn", { detail: userData }))
@@ -77,7 +100,7 @@ const Register = () => {
     <div className="auth-container">
       <div className="auth-box">
         <h1 className="auth-title">Đăng Ký</h1>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Họ và tên</label>
@@ -110,7 +133,7 @@ const Register = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+              placeholder="Nhập mật khẩu"
               className="form-input"
             />
           </div>
@@ -129,8 +152,8 @@ const Register = () => {
 
           {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" className="auth-button">
-            Đăng Ký
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? "Đang đăng ký..." : "Đăng Ký"}
           </button>
         </form>
 

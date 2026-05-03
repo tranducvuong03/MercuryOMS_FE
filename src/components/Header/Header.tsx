@@ -7,6 +7,7 @@ import type { Notification } from "../../data/notifications"
 import NotificationPanel from "./NotificationPanel"
 import "./Header.css"
 import logo from "../../assets/logo.png"
+import { authApi } from "../../services/auth"
 
 interface User {
   name: string
@@ -87,11 +88,19 @@ const Header = () => {
     handleSearch(searchTerm)
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem("user")
-    setUser(null)
-    window.dispatchEvent(new CustomEvent("userLoggedOut"))
-    navigate("/")
+  const handleLogout = async () => {
+    try {
+      await authApi.logout()
+    } catch {
+      // ignore lỗi (ví dụ token hết hạn)
+    } finally {
+      localStorage.removeItem("user")
+      setUser(null)
+
+      window.dispatchEvent(new CustomEvent("userLoggedOut"))
+
+      navigate("/")
+    }
   }
 
   const handleMarkAsRead = (notificationId: number) => {
@@ -205,7 +214,7 @@ const Header = () => {
                           <div className="suggestion-name">{product.name}</div>
                           <div className="suggestion-meta">
                             <span className="suggestion-price">
-                              {product.price.toLocaleString()}đ
+                              {product.originalPrice.toLocaleString()}đ
                             </span>
                             <span className="suggestion-sold">
                               Đã bán {product.sold}

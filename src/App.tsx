@@ -14,6 +14,7 @@ import Checkout from "./pages/Checkout"
 import Profile from "./pages/Profile"
 import Tracking from "./pages/Tracking"
 import "./App.css"
+import AuthCallback from "./pages/AuthCallback"
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/tracking" element={<Tracking />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
       <Footer />
       <ShopChatWidget />

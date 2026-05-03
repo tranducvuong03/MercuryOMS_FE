@@ -6,18 +6,19 @@ interface Props {
   mainImageIndex: number
   setMainImageIndex: (n: number) => void
   currentImages: string[]
+  mainImageSrc: string
   handlePrevImage: () => void
   handleNextImage: () => void
 }
 
-const ImageSection: React.FC<Props> = ({ product, mainImageIndex, setMainImageIndex, currentImages, handlePrevImage, handleNextImage }) => {
+const ImageSection: React.FC<Props> = ({ product, mainImageIndex, setMainImageIndex, currentImages, mainImageSrc, handlePrevImage, handleNextImage }) => {
   const discountPercent = product.discount || 0
 
   return (
     <div className="product-image-section">
       <div className="main-image">
         <button onClick={handlePrevImage} className="image-nav prev-btn">❮</button>
-        <img src={currentImages[mainImageIndex]} alt={product.name} />
+        <img src={mainImageSrc} alt={product.name} />
         <button onClick={handleNextImage} className="image-nav next-btn">❯</button>
         {discountPercent > 0 && (
           <div className="discount-badge-large">-{discountPercent}%</div>

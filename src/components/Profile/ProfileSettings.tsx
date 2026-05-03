@@ -13,14 +13,6 @@ const ProfileSettings = () => {
 
         <div className="settings-item">
           <div>
-            <p className="setting-title">Quản lý địa chỉ</p>
-            <p className="setting-desc">Thêm hoặc chỉnh sửa địa chỉ giao hàng</p>
-          </div>
-          <button className="btn-change">Quản lý</button>
-        </div>
-
-        <div className="settings-item">
-          <div>
             <p className="setting-title">Thông báo</p>
             <p className="setting-desc">Cài đặt các loại thông báo</p>
           </div>

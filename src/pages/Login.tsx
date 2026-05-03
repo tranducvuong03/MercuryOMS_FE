@@ -1,26 +1,39 @@
 import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import "./Auth.css"
+import { authApi } from "../services/auth"
 
 const Login = () => {
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
+
+    const params = new URLSearchParams(window.location.search)
+    const err = params.get("error")
+
+    if (err === "facebook_cancel") {
+      setError("Bạn đã hủy đăng nhập Facebook")
+    }
+
+    if (err === "external_failed") {
+      setError("Đăng nhập mạng xã hội thất bại")
+    }
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    setError("")
+
     if (!email || !password) {
       setError("Vui lòng nhập đầy đủ thông tin")
       return
     }
 
-    // Simple validation
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Email không hợp lệ")
       return
@@ -31,37 +44,48 @@ const Login = () => {
       return
     }
 
-    // Simulate login success
-    const userData = { email, name: email.split("@")[0] }
-    localStorage.setItem("user", JSON.stringify(userData))
-    // Dispatch custom event để Header cập nhật
-    window.dispatchEvent(new CustomEvent("userLoggedIn", { detail: userData }))
-    navigate("/")
+    try {
+      setLoading(true)
+
+      const res = await authApi.login(email, password)
+
+      if (!res.isSuccess) {
+        setError(res.message || "Đăng nhập thất bại")
+        return
+      }
+
+      const userData = {
+        email,
+        name: email.split("@")[0]
+      }
+
+      localStorage.setItem("user", JSON.stringify(userData))
+
+      window.dispatchEvent(
+        new CustomEvent("userLoggedIn", { detail: userData })
+      )
+
+      navigate("/")
+    } catch (err: any) {
+      setError(err.message || "Có lỗi xảy ra")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleFacebookLogin = () => {
-    // Simulate Facebook login
-    const userData = { email: "user@facebook.com", name: "Facebook User" }
-    localStorage.setItem("user", JSON.stringify(userData))
-    // Dispatch custom event để Header cập nhật
-    window.dispatchEvent(new CustomEvent("userLoggedIn", { detail: userData }))
-    navigate("/")
+    authApi.externalLogin("Facebook")
   }
 
   const handleGoogleLogin = () => {
-    // Simulate Google login
-    const userData = { email: "user@gmail.com", name: "Google User" }
-    localStorage.setItem("user", JSON.stringify(userData))
-    // Dispatch custom event để Header cập nhật
-    window.dispatchEvent(new CustomEvent("userLoggedIn", { detail: userData }))
-    navigate("/")
+    authApi.externalLogin("Google")
   }
 
   return (
     <div className="auth-container">
       <div className="auth-box">
         <h1 className="auth-title">Đăng Nhập</h1>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Email</label>
@@ -93,8 +117,8 @@ const Login = () => {
 
           {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" className="auth-button">
-            Đăng Nhập
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? "Đang đăng nhập..." : "Đăng Nhập"}
           </button>
         </form>
 

@@ -1,31 +1,31 @@
-import type { Review } from "./review"
-import type { Shop } from "./shop"
-
 export interface Variant {
   id: string
   color: string
   size?: string
-  images: string[]
+  image: string | null
+  originalPrice: number
+  discountPrice?: number
   stock: number
 }
 
 export interface Product {
-  id: number
+  id: string
   name: string
-  price: number
-  originalPrice?: number
+  originalPrice: number
+  discountPrice?: number
   discount?: number
+
   category?: string
   brand?: string
   description?: string
+
   rating: number
   sold: number
+
   images: string[]
   badge?: string
-  createdDate?: string
-  reviews?: Review[]
+
   variants?: Variant[]
-  shop?: Shop
 }
 
 export interface ProductResponse {
@@ -33,8 +33,8 @@ export interface ProductResponse {
   name: string
   description?: string
 
-  basePrice: number
-  originalPrice?: number
+  originalPrice: number
+  discountPrice?: number | null
 
   isActive: boolean
   thumbnailUrl?: string

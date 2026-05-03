@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom"
-import { products } from "../data/products"
 import RelatedProducts from "../components/Product/RelatedProducts"
 import Breadcrumb from "../components/BreadCrumb/Breadcrumb"
 import "./ProductDetail.css"
@@ -8,25 +7,92 @@ import ImageSection from "../components/ProductDetail/ImageSection"
 import InfoSection from "../components/ProductDetail/InfoSection"
 import ShopInfo from "../components/ProductDetail/ShopInfo"
 import ReviewsSection from "../components/ProductDetail/ReviewsSection"
+import type { Product } from "../types/product"
+import type { ProductDetailResponse } from "../types/productVariant"
+import { productApi } from "../services/productApi"
+import { cartApi } from "../services/cartApi"
 
 const ProductDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const product = products.find(p => p.id === Number(id))
+
+  const [product, setProduct] = useState<Product | null>(null)
+
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+
+  const [selectedVariantId, setSelectedVariantId] = useState("")
   const [mainImageIndex, setMainImageIndex] = useState(0)
-  const [selectedVariantId, setSelectedVariantId] = useState(product?.variants?.[0]?.id || "")
+  const [mainImageSrc, setMainImageSrc] = useState("")
+
+  const mapToFE = (data: ProductDetailResponse): Product => {
+    return {
+      id: data.id,      name: data.name,
+      description: data.description,
+
+      discountPrice: data.discountPrice,
+      originalPrice: data.originalPrice,
+      discount: data.discount,
+
+      category: data.category,
+
+      rating: data.rating,
+      sold: data.sold,
+
+      images: data.images,
+
+      variants: data.variants.map(v => ({
+        id: v.id,
+        color: v.color,
+        size: v.size,
+        originalPrice: v.originalPrice,
+        discountPrice: v.discountPrice,
+        image: v.imageUrl ?? null,
+        stock: v.stock
+      }))
+    }
+  }
+
+  useEffect(() => {
+    if (!id) return
+
+    productApi.getDetail(id).then(res => {
+      if (res.isSuccess && res.value) {
+        const mapped = mapToFE(res.value)
+        setProduct(mapped)
+      } else {
+        setProduct(null)
+      }
+    })
+  }, [id])
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [id])
 
   useEffect(() => {
-    setSelectedVariantId(product?.variants?.[0]?.id || "")
+    if (!product) return
+
+    setSelectedVariantId("")
     setQuantity(1)
     setMainImageIndex(0)
+
+    setMainImageSrc(product.images[0] || "")
   }, [product?.id])
+
+  const selectedVariant = product?.variants?.find(v => v.id === selectedVariantId)
+
+  const currentImages = product?.images || []
+
+  useEffect(() => {
+    if (selectedVariant?.image && selectedVariant.image.trim() !== "") {
+      setMainImageSrc(selectedVariant.image)
+      setMainImageIndex(0)
+    } else if (product?.images?.length) {
+      setMainImageSrc(product.images[0])
+      setMainImageIndex(0)
+    }
+  }, [selectedVariantId, product])
 
   if (!product) {
     return (
@@ -41,29 +107,46 @@ const ProductDetail = () => {
     )
   }
 
-  const selectedVariant = product.variants?.find(v => v.id === selectedVariantId)
-  const currentImages = selectedVariant?.images || product.images
-  const currentStock = selectedVariant?.stock || 50
+  const currentStock = selectedVariant?.stock || 0
 
-  const handleAddToCart = () => {
-    setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
+  const handleAddToCartSafe = async () => {
+    if (!selectedVariantId) return
+
+    try {
+      const res = await cartApi.addToCart({
+        productId: String(product.id),
+        variantId: selectedVariantId,
+        quantity
+      })
+
+      if (res.isSuccess) {
+        setAdded(true)
+        setTimeout(() => setAdded(false), 2000)
+      } else {
+        alert(res.message || "Thêm vào giỏ hàng thất bại")
+      }
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const handlePrevImage = () => {
-    setMainImageIndex(i => (i - 1 + currentImages.length) % currentImages.length)
+    const newIndex = (mainImageIndex - 1 + currentImages.length) % currentImages.length
+    setMainImageIndex(newIndex)
+    setMainImageSrc(currentImages[newIndex])
   }
 
   const handleNextImage = () => {
-    setMainImageIndex(i => (i + 1) % currentImages.length)
+    const newIndex = (mainImageIndex + 1) % currentImages.length
+    setMainImageIndex(newIndex)
+    setMainImageSrc(currentImages[newIndex])
   }
 
   return (
     <div className="product-detail-container">
-      {/* Breadcrumb */}
       <Breadcrumb items={[
         { label: "Trang chủ", link: "/" },
-        { label: product.category || "Danh mục", link: `/products?category=${encodeURIComponent(product.category || "")}` },
+        { label: product.category || "Danh mục", link: `/products` },
         { label: product.name }
       ]} />
 
@@ -71,8 +154,12 @@ const ProductDetail = () => {
         <ImageSection
           product={product}
           mainImageIndex={mainImageIndex}
-          setMainImageIndex={setMainImageIndex}
+          setMainImageIndex={(i) => {
+            setMainImageIndex(i)
+            setMainImageSrc(currentImages[i])
+          }}
           currentImages={currentImages}
+          mainImageSrc={mainImageSrc}
           handlePrevImage={handlePrevImage}
           handleNextImage={handleNextImage}
         />
@@ -85,27 +172,20 @@ const ProductDetail = () => {
           setQuantity={setQuantity}
           currentStock={currentStock}
           added={added}
-          handleAddToCart={handleAddToCart}
+          handleAddToCart={handleAddToCartSafe}
         />
       </div>
 
-      {/* Shop Info Section */}
       <ShopInfo product={product} />
 
-      {/* Product Description */}
       {product.description && (
         <div className="product-description">
           <h2>Chi tiết sản phẩm</h2>
-          <div className="description-content">
-            <p>{product.description}</p>
-          </div>
+          <p>{product.description}</p>
         </div>
       )}
 
-      {/* Reviews Section */}
       <ReviewsSection product={product} />
-
-      {/* Related Products */}
       <RelatedProducts currentProduct={product} />
     </div>
   )
