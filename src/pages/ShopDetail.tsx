@@ -5,6 +5,18 @@ import { useState, useEffect, useRef } from "react"
 import ProductCard from "../components/Product/ProductCard"
 import { FaShop, FaStar } from "react-icons/fa6"
 
+interface Voucher {
+  id: string | number
+  discountType: "percent" | "fixed"
+  discount: number
+  title: string
+  description: string
+  code: string
+  minPurchase: number
+  quantity: number
+  expiryDate: string
+}
+
 const ShopDetail = () => {
   const { shopId } = useParams()
   const navigate = useNavigate()
@@ -16,7 +28,7 @@ const ShopDetail = () => {
 
   // Follow state (persisted in localStorage as array of ids)
   const [isFollowed, setIsFollowed] = useState(false)
-  const [localFollowers, setLocalFollowers] = useState(shop?.followers || 0)
+  const [localFollowers, setLocalFollowers] = useState<number>(shop?.followers || 0)
 
   // Chat state
   const [showChat, setShowChat] = useState(false)
@@ -26,7 +38,7 @@ const ShopDetail = () => {
   useEffect(() => {
     if (!shop) return
     const stored = localStorage.getItem("followedShops")
-    const arr = stored ? JSON.parse(stored) as number[] : []
+    const arr = stored ? (JSON.parse(stored) as number[]) : []
     setIsFollowed(arr.includes(shop.id))
     setLocalFollowers(shop.followers)
 
@@ -43,10 +55,10 @@ const ShopDetail = () => {
       const followed = ev.detail?.followed
       if (!shopId || shopId !== shop?.id) return
       setIsFollowed(Boolean(followed))
-      setLocalFollowers(n => followed ? n + 1 : Math.max(0, n - 1))
+      setLocalFollowers((n: number) => (followed ? n + 1 : Math.max(0, n - 1)))
     }
-    window.addEventListener('followChanged', handler as EventListener)
-    return () => window.removeEventListener('followChanged', handler as EventListener)
+    window.addEventListener("followChanged", handler as EventListener)
+    return () => window.removeEventListener("followChanged", handler as EventListener)
   }, [shop])
 
   const toggleFollow = () => {
@@ -57,12 +69,12 @@ const ShopDetail = () => {
       const next = arr.filter(id => id !== shop.id)
       localStorage.setItem("followedShops", JSON.stringify(next))
       setIsFollowed(false)
-      setLocalFollowers(n => Math.max(0, n - 1))
+      setLocalFollowers((n: number) => Math.max(0, n - 1))
     } else {
       arr.push(shop.id)
       localStorage.setItem("followedShops", JSON.stringify(arr))
       setIsFollowed(true)
-      setLocalFollowers(n => n + 1)
+      setLocalFollowers((n: number) => n + 1)
     }
   }
 
@@ -144,11 +156,14 @@ const ShopDetail = () => {
           <button className="action-btn" onClick={toggleFollow}>
             {isFollowed ? "Đã theo dõi" : "Follow"}
           </button>
-          <button className="action-btn" onClick={() => {
-            if (shop) {
-              window.dispatchEvent(new CustomEvent('openShopChat', { detail: { shopId: shop.id } }))
-            }
-          }}>
+          <button
+            className="action-btn"
+            onClick={() => {
+              if (shop) {
+                window.dispatchEvent(new CustomEvent("openShopChat", { detail: { shopId: shop.id } }))
+              }
+            }}
+          >
             Chat
           </button>
         </div>
@@ -214,7 +229,7 @@ const ShopDetail = () => {
           <div className="vouchers-section">
             {shop.vouchers && shop.vouchers.length > 0 ? (
               <div className="vouchers-list">
-                {shop.vouchers.map(voucher => (
+                {shop.vouchers.map((voucher: Voucher) => (
                   <div key={voucher.id} className="voucher-card">
                     <div className="voucher-header">
                       <div className="voucher-discount">
@@ -309,11 +324,15 @@ const ShopDetail = () => {
           </div>
           <div className="chat-input">
             <input ref={el => { messageRef.current = el }} placeholder="Gửi tin nhắn cho shop..." />
-            <button onClick={() => {
-              const txt = messageRef.current?.value || ""
-              sendMessage(txt)
-              if (messageRef.current) messageRef.current.value = ""
-            }}>Gửi</button>
+            <button
+              onClick={() => {
+                const txt = messageRef.current?.value || ""
+                sendMessage(txt)
+                if (messageRef.current) messageRef.current.value = ""
+              }}
+            >
+              Gửi
+            </button>
           </div>
         </div>
       )}

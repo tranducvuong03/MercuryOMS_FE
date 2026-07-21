@@ -2,11 +2,11 @@ import type { ExternalProvider } from "../types/externalProvider"
 import type { Result } from "../types/result"
 import { request, setToken, clearToken } from "./apiClient"
 
-type LoginResponse = {
+export type LoginResponse = {
   accessToken: string
 }
 
-type RefreshResponse = {
+export type RefreshResponse = {
   accessToken: string
 }
 

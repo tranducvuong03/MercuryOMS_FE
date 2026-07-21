@@ -13,6 +13,18 @@ const setToken = (token: string) =>
 const clearToken = () =>
   localStorage.removeItem("token")
 
+// BỔ SUNG: Helper lấy Headers mặc định (kèm Authorization nếu có token)
+export const getHeaders = (): HeadersInit => {
+  const token = getToken()
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+  return headers
+}
+
 type Options = RequestInit & {
   auth?: boolean
 }
@@ -95,4 +107,4 @@ export async function request<T = any>(
   return (await res.json()) as T
 }
 
-export { setToken, clearToken }
+export { setToken, clearToken, getToken }

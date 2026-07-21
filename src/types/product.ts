@@ -9,6 +9,7 @@ export interface Variant {
 }
 
 export interface Product {
+  shop: any
   id: string
   name: string
   originalPrice: number
