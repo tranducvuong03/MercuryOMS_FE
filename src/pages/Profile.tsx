@@ -19,21 +19,30 @@ import ProfileVouchers from "../components/Profile/ProfileVouchers"
 import ProfileFollowedShops from "../components/Profile/ProfileFollowedShops"
 import ProfileSettings from "../components/Profile/ProfileSettings"
 import ProfileAddresses from "../components/Profile/ProfileAddresses"
-
-interface User {
-  name: string
-  email: string
-}
+import { userApi, type UserInfo } from "../services/user"
 
 const Profile = () => {
   const navigate = useNavigate()
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<UserInfo | null>(null)
   const [activeTab, setActiveTab] = useState("info")
   const [followedShops, setFollowedShops] = useState<number[]>([])
 
   useEffect(() => {
     window.scrollTo(0, 0)
+    userInfo()
   }, [])
+
+  const userInfo = async () => {
+    try {
+      const res = await userApi.getUserInfo();
+
+      if (res.isSuccess && res.value) {
+        setUser(res.value)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
@@ -77,10 +86,10 @@ const Profile = () => {
             <div className="avatar-circle">
               <img
                 src="https://picsum.photos/120/120?avatar"
-                alt={user.name}
+                alt={user.fullName}
               />
             </div>
-            <p className="user-name">{user.name}</p>
+            <p className="user-name">{user.fullName}</p>
             <p className="user-email">{user.email}</p>
           </div>
 

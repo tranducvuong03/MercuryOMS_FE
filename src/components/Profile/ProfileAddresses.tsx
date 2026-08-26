@@ -1,10 +1,11 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent} from "react"
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { FaCheckCircle, FaEdit, FaMapMarkerAlt, FaPlus, FaTrash } from "react-icons/fa"
-import { districtOptions, provinceOptions } from "../../data/vietnamLocations"
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { Address } from "../../types/address"
+import { addressApi } from "../../services/address"
 
 // Fix for default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -14,31 +15,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 })
 
-const defaultAddresses: Address[] = [
-  {
-    id: 1,
-    label: "Nhà riêng",
-    recipient: "Nguyễn Văn A",
-    phone: "0912 345 678",
-    street: "123 Đường Lê Lợi",
-    district: "Quận 1",
-    city: "Phường Bến Nghé",
-    province: "ho-chi-minh",
-    isDefault: true,
-  },
-  {
-    id: 2,
-    label: "Văn phòng",
-    recipient: "Trần Thị B",
-    phone: "0987 654 321",
-    street: "456 Phố Hai Bà Trưng",
-    district: "Quận 3",
-    city: "Phường 6",
-    province: "ho-chi-minh",
-    isDefault: false,
-  },
-]
-
 const emptyAddress = {
   label: "",
   recipient: "",
@@ -47,11 +23,25 @@ const emptyAddress = {
   district: "",
   city: "",
   province: "",
+  isDefault: false,
+}
+
+const addressQueryKey = ["addresses"]
+
+type AddressPayload = {
+  id?: string
+  label: string
+  receiverName: string
+  phone: string
+  street: string
+  district: string
+  city: string
+  province: string
+  isDefault: boolean
 }
 
 const ProfileAddresses = () => {
-  const [addresses, setAddresses] = useState<Address[]>([])
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string>("")
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isMapOpen, setIsMapOpen] = useState(false)
   const [mapQuery, setMapQuery] = useState("")
@@ -60,40 +50,52 @@ const ProfileAddresses = () => {
   const [mapLoading, setMapLoading] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState<{ lat: string; lon: string; display_name: string } | null>(null)
   const [mapCenter, setMapCenter] = useState<[number, number]>([10.8231, 106.6297]) // TP.HCM
-  const [mapZoom, setMapZoom] = useState(10)
+  const [mapZoom] = useState(10)
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null)
   const [formData, setFormData] = useState({ ...emptyAddress })
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState("")
+  const queryClient = useQueryClient()
+
+  const { data: addresses = [] } = useQuery<Address[]>({
+    queryKey: addressQueryKey,
+    queryFn: async () => {
+      const res = await addressApi.getAddress()
+      if (!res.isSuccess || !res.value) {
+        throw new Error(res.message || "Không thể tải địa chỉ")
+      }
+      return res.value
+    },
+  })
 
   useEffect(() => {
-    const saved = localStorage.getItem("profileAddresses")
-    if (saved) {
-      setAddresses(JSON.parse(saved))
-    } else {
-      setAddresses(defaultAddresses)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (addresses.length > 0) {
-      localStorage.setItem("profileAddresses", JSON.stringify(addresses))
-    }
-  }, [addresses])
-
-  useEffect(() => {
-    const provinceLabel = provinceOptions.find(option => option.value === formData.province)?.label || ""
-    const query = [formData.street, formData.city, formData.district, provinceLabel]
+    const query = [formData.street, formData.city, formData.province]
       .filter(Boolean)
       .join(", ")
     setMapQuery(query || "Việt Nam")
   }, [formData])
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = event.target
+    const target = event.target
+    const name = target.name
+    const nextValue = target instanceof HTMLInputElement && target.type === "checkbox"
+      ? target.checked
+      : target.value
+
     setFormData(prev => ({
       ...prev,
-      [name]: value,
-      ...(name === "province" ? { district: "" } : {}),
+      [name]: nextValue,
     }))
+  }
+
+  const parseVietnamWard = (displayName: string) => {
+    const wardMatch = displayName.match(/\b(?:Phường|Xã|Thị trấn)\s+[^,]+/i)
+    return wardMatch?.[0]?.trim() || ""
+  }
+
+  const parseVietnamProvince = (displayName: string) => {
+    const provinceMatch = displayName.match(/\b(?:Tỉnh|Thành phố|Tp\.?|TP\.?)\s+[^,]+/i)
+    return provinceMatch?.[0]?.trim() || ""
   }
 
   const parseNominatimAddress = (location: any) => {
@@ -102,25 +104,10 @@ const ProfileAddresses = () => {
       .filter(Boolean)
       .join(" ")
     const street = streetParts || location.display_name || ""
-    const ward = address.suburb || address.village || address.hamlet || ""
-    const district = address.city_district || address.county || address.suburb || address.state_district || ""
+    const ward = parseVietnamWard(location.display_name || "") || address.ward || address.suburb || address.village || address.hamlet
+    const district = address.city_district || address.county || address.state_district || ""
     const city = address.city || address.town || address.village || address.hamlet || address.county || ""
-    const vietnamState = address.state || ""
-    const province = vietnamState.includes("Hồ Chí Minh")
-      ? "ho-chi-minh"
-      : vietnamState.includes("Hà Nội")
-      ? "ha-noi"
-      : vietnamState.includes("Đà Nẵng")
-      ? "da-nang"
-      : vietnamState.includes("Hải Phòng")
-      ? "hai-phong"
-      : vietnamState.includes("Cần Thơ")
-      ? "can-tho"
-      : vietnamState.includes("Đồng Nai")
-      ? "dong-nai"
-      : vietnamState.includes("Bình Dương")
-      ? "binh-duong"
-      : ""
+    const province = parseVietnamProvince(location.display_name || "") || address.state || ""
 
     return {
       street,
@@ -161,9 +148,7 @@ const ProfileAddresses = () => {
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=vi`
       )
       const data = await response.json()
-      if (data && data.display_name) {
-        return data.display_name
-      }
+      return data || null
     } catch (error) {
       console.error('Reverse geocoding failed:', error)
     }
@@ -176,16 +161,21 @@ const ProfileAddresses = () => {
         const { lat, lng } = e.latlng
         setMarkerPosition([lat, lng])
         setMapCenter([lat, lng])
-        const address = await reverseGeocode(lat, lng)
-        if (address) {
+        const result = await reverseGeocode(lat, lng)
+
+        if (result && result.display_name) {
+          const addressParts = parseNominatimAddress(result)
           setFormData(prev => ({
             ...prev,
-            street: address,
+            street: result.display_name,
+            city: addressParts.ward || prev.city,
+            district: addressParts.district || prev.district,
+            province: addressParts.province || prev.province,
           }))
           setSelectedLocation({
             lat: lat.toString(),
             lon: lng.toString(),
-            display_name: address,
+            display_name: result.display_name,
           })
         }
       },
@@ -217,72 +207,130 @@ const ProfileAddresses = () => {
       setEditingId(address.id)
       setFormData({
         label: address.label,
-        recipient: address.recipient,
+        recipient: address.receiverName,
         phone: address.phone,
         street: address.street,
         district: address.district,
         city: address.city,
         province: address.province,
+        isDefault: address.isDefault,
       })
     } else {
-      setEditingId(null)
-      setFormData({ ...emptyAddress })
+      setEditingId("")
+      setFormData({ ...emptyAddress, isDefault: addresses.length === 0 })
     }
+    setSaveError("")
     setIsMapOpen(false)
     setIsFormOpen(true)
   }
 
   const closeForm = () => {
-    setEditingId(null)
-    setFormData({ ...emptyAddress })
+    setEditingId("")
+    setFormData({ ...emptyAddress, isDefault: addresses.length === 0 })
+    setSaveError("")
     setIsMapOpen(false)
     setIsFormOpen(false)
   }
 
-  const handleSave = (event: FormEvent<HTMLFormElement>) => {
+  const saveAddressMutation = useMutation({
+    mutationFn: async ({ payload, isEdit }: { payload: AddressPayload; isEdit: boolean }) => {
+      const res = isEdit
+        ? await addressApi.updateAddress(payload as any)
+        : await addressApi.createAddress(payload as any)
+
+      if (!res.isSuccess) {
+        throw new Error(res.message || (isEdit ? "Không thể cập nhật địa chỉ." : "Không thể tạo địa chỉ mới."))
+      }
+
+      return {
+        payload,
+        savedAddress: isEdit ? payload : (res.value as Address | undefined) ?? payload,
+        isEdit,
+      }
+    },
+    onSuccess: ({ payload, savedAddress, isEdit }) => {
+      queryClient.setQueryData<Address[]>(addressQueryKey, (prev = []) => {
+        const next = isEdit
+          ? prev.map(item =>
+              item.id === payload.id
+                ? { ...item, ...payload, isDefault: payload.isDefault ? true : item.isDefault }
+                : item
+            )
+          : [{ ...(savedAddress as Address), isDefault: payload.isDefault || prev.length === 0 }, ...prev.map(item => ({ ...item, isDefault: false }))]
+
+        if (payload.isDefault && isEdit) {
+          return next.map(item => ({ ...item, isDefault: item.id === payload.id }))
+        }
+
+        return next
+      })
+      closeForm()
+    },
+    onError: (error: Error) => {
+      setSaveError(error.message)
+    },
+    onSettled: () => {
+      setIsSaving(false)
+    },
+  })
+
+  const handleSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const next = {
-      id: editingId ?? Date.now(),
+    setIsSaving(true)
+    setSaveError("")
+
+    const shouldBeDefault = formData.isDefault || (!editingId && addresses.length === 0)
+    const payload: AddressPayload = {
+      id: editingId || undefined,
       label: formData.label.trim() || "Địa chỉ mới",
-      recipient: formData.recipient.trim() || "",
-      phone: formData.phone.trim() || "",
-      street: formData.street.trim() || "",
-      district: formData.district.trim() || "",
-      city: formData.city.trim() || "",
-      province: formData.province.trim() || "",
-      isDefault: addresses.length === 0 || editingId === null ? true : addresses.find(a => a.id === editingId)?.isDefault ?? false,
+      receiverName: formData.recipient.trim(),
+      phone: formData.phone.trim(),
+      street: formData.street.trim(),
+      district: formData.district.trim(),
+      city: formData.city.trim(),
+      province: formData.province.trim(),
+      isDefault: shouldBeDefault,
     }
 
-    setAddresses(prev => {
-      const updated = editingId
-        ? prev.map(address => (address.id === editingId ? next : address))
-        : [next, ...prev.map(address => ({ ...address, isDefault: false }))]
-
-      if (!updated.some(address => address.isDefault) && updated.length > 0) {
-        updated[0] = { ...updated[0], isDefault: true }
-      }
-
-      return updated
-    })
-
-    closeForm()
+    saveAddressMutation.mutate({ payload, isEdit: Boolean(editingId) })
   }
 
-  const handleRemove = (id: number) => {
-    setAddresses(prev => {
+  const handleRemove = (id: string) => {
+    queryClient.setQueryData<Address[]>(addressQueryKey, (prev = []) => {
       const next = prev.filter(address => address.id !== id)
-      if (!next.some(address => address.isDefault) && next.length > 0) {
-        next[0] = { ...next[0], isDefault: true }
-      }
-      return next
+      return next.length > 0 ? next.map((address, index) => ({ ...address, isDefault: index === 0 && !next.some(item => item.isDefault) })) : next
     })
   }
 
-  const handleSetDefault = (id: number) => {
-    setAddresses(prev => prev.map(address => ({ ...address, isDefault: address.id === id })))
-  }
+  const handleSetDefault = async (id: string) => {
+    const target = addresses.find(address => address.id === id)
+    if (!target) return
 
-  const availableDistricts = formData.province ? districtOptions[formData.province] ?? [] : []
+    const payload: AddressPayload = {
+      id,
+      label: target.label,
+      receiverName: target.receiverName,
+      phone: target.phone,
+      street: target.street,
+      district: target.district,
+      city: target.city,
+      province: target.province,
+      isDefault: true,
+    }
+
+    try {
+      const res = await addressApi.updateAddress(payload as any)
+      if (!res.isSuccess) {
+        return
+      }
+
+      queryClient.setQueryData<Address[]>(addressQueryKey, (prev = []) =>
+        prev.map(address => ({ ...address, isDefault: address.id === id }))
+      )
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   return (
     <div className="profile-section">
@@ -290,7 +338,7 @@ const ProfileAddresses = () => {
         <div>
           <h2>Quản lý địa chỉ</h2>
           <p className="section-description">
-            Quản lý địa chỉ giao hàng của bạn, chọn quận/huyện và tỉnh/thành bằng dropdown.
+            Quản lý địa chỉ giao hàng của bạn, nhập phường/xã và chọn tỉnh/thành.
           </p>
         </div>
         <button className="btn-primary btn-add" onClick={() => openForm()}>
@@ -304,7 +352,7 @@ const ProfileAddresses = () => {
             <div className="address-card-top">
               <div>
                 <p className="address-label">{address.label}</p>
-                <p className="address-name">{address.recipient}</p>
+                <p className="address-name">{address.receiverName}</p>
               </div>
               {address.isDefault && (
                 <span className="address-default">
@@ -314,8 +362,8 @@ const ProfileAddresses = () => {
             </div>
             <div className="address-details">
               <p>{address.phone}</p>
-              <p>{address.street}, {address.city}, {address.district}</p>
-              <p>{provinceOptions.find(option => option.value === address.province)?.label || address.province}</p>
+              <p>{address.street}, {address.city}</p>
+              <p>{address.province}</p>
             </div>
             <div className="address-actions">
               <button className="btn-secondary" onClick={() => openForm(address)}>
@@ -384,12 +432,22 @@ const ProfileAddresses = () => {
                     name="street"
                     value={formData.street}
                     onChange={handleChange}
-                    placeholder="Số nhà, đường, phường, quận..."
+                    placeholder="Số nhà, đường, phường, xã..."
                   />
                   <button type="button" className="btn-secondary btn-map" onClick={() => setIsMapOpen(prev => !prev)}>
                     <FaMapMarkerAlt style={{ marginRight: 6 }} /> Chọn trên bản đồ
                   </button>
                 </div>
+              </div>
+              <div className="form-group">
+                <label>Thành phố / Tỉnh</label>
+                <input
+                  type="text"
+                  name="province"
+                  value={formData.province}
+                  onChange={handleChange}
+                  placeholder="Nhập tỉnh/thành hoặc để bản đồ điền"
+                />
               </div>
               <div className="form-group">
                 <label>Phường / Xã</label>
@@ -401,39 +459,27 @@ const ProfileAddresses = () => {
                   placeholder="Nhập phường / xã"
                 />
               </div>
-              <div className="form-group">
-                <label>Quận / Huyện</label>
-                <select
-                  name="district"
-                  value={formData.district}
-                  onChange={handleChange}
-                >
-                  <option value="">Chọn quận/huyện</option>
-                  {availableDistricts.map(district => (
-                    <option key={district} value={district}>{district}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Thành phố / Tỉnh</label>
-                <select
-                  name="province"
-                  value={formData.province}
-                  onChange={handleChange}
-                >
-                  <option value="">Chọn tỉnh/thành</option>
-                  {provinceOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
             </div>
+
+            <div className="form-group form-group-checkbox">
+              <label className="checkbox-row">
+                <input
+                  type="checkbox"
+                  name="isDefault"
+                  checked={formData.isDefault}
+                  onChange={handleChange}
+                />
+                <span>Đặt làm địa chỉ mặc định</span>
+              </label>
+            </div>
+
+            {saveError && <p className="save-error">{saveError}</p>}
 
             {isMapOpen && (
               <div className="map-panel">
                 <div className="map-panel-header">
                   <div>
-                    <p>Nhập tên đường, quận, thành phố để tìm vị trí. Chọn kết quả để tự động điền địa chỉ.</p>
+                    <p>Nhập tên đường, phường/xã, tỉnh/thành để tìm vị trí. Chọn kết quả để tự động điền địa chỉ.</p>
                   </div>
                   <a
                     className="map-open-link"
@@ -456,6 +502,9 @@ const ProfileAddresses = () => {
                   </button>
                 </div>
                 {mapLoading && <p className="map-status">Đang tìm...</p>}
+                {!mapLoading && selectedLocation && (
+                  <p className="map-status">Đã chọn: {selectedLocation.display_name}</p>
+                )}
                 {mapResults.length > 0 && (
                   <div className="map-results">
                     {mapResults.map(result => (
@@ -486,8 +535,8 @@ const ProfileAddresses = () => {
             )}
 
             <div className="form-actions">
-              <button type="submit" className="btn-primary">
-                {editingId ? "Lưu thay đổi" : "Lưu địa chỉ"}
+              <button type="submit" className="btn-primary" disabled={isSaving}>
+                {isSaving ? "Đang lưu..." : editingId ? "Lưu thay đổi" : "Lưu địa chỉ"}
               </button>
               <button type="button" className="btn-secondary" onClick={closeForm}>
                 Huỷ

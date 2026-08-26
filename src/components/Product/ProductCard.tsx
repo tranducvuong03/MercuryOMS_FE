@@ -37,7 +37,7 @@ const ProductCard = ({ product }: Props) => {
 
         <div className="product-price-section">
           <div className="product-price">
-            {product.price.toLocaleString()}đ
+            {product.discountPrice?.toLocaleString()}đ
           </div>
           {product.originalPrice && (
             <div className="product-original-price">

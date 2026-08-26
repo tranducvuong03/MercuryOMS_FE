@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { authApi } from "../services/auth"
+import { userApi } from "../services/user"
 
 const AuthCallback = () => {
   const navigate = useNavigate()
@@ -8,17 +9,12 @@ const AuthCallback = () => {
   useEffect(() => {
     const run = async () => {
       try {
-        const res = await authApi.refreshToken()
+        const userData = await userApi.getUserInfo()
 
-        const userData = {
-          email: "external-user",
-          name: "External User"
-        }
-
-        localStorage.setItem("user", JSON.stringify(userData))
+        localStorage.setItem("user", JSON.stringify(userData.value))
 
         window.dispatchEvent(
-          new CustomEvent("userLoggedIn", { detail: userData })
+          new CustomEvent("userLoggedIn", { detail: userData.value })
         )
 
         navigate("/")

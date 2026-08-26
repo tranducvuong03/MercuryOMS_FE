@@ -10,7 +10,7 @@ import ReviewsSection from "../components/ProductDetail/ReviewsSection"
 import type { Product } from "../types/product"
 import type { ProductDetailResponse } from "../types/productVariant"
 import { productApi } from "../services/productApi"
-import { cartApi } from "../services/cartApi"
+import { cartApi } from "../services/cart"
 
 const ProductDetail = () => {
   const { id } = useParams()

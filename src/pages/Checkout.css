@@ -135,6 +135,55 @@
   gap: 24px;
 }
 
+.payment-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.payment-loading-card {
+  background: white;
+  border-radius: 16px;
+  padding: 32px 28px;
+  text-align: center;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  min-width: min(320px, 90vw);
+}
+
+.payment-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #f3f3f3;
+  border-top-color: #ff6b6b;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.payment-loading-card h3 {
+  margin: 0 0 8px;
+  color: #222;
+  font-size: 18px;
+}
+
+.payment-loading-card p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Left Section - Forms */
 .checkout-left {
   display: flex;

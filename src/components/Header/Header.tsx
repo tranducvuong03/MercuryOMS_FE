@@ -8,26 +8,34 @@ import NotificationPanel from "./NotificationPanel"
 import "./Header.css"
 import logo from "../../assets/logo.png"
 import { authApi } from "../../services/auth"
-
-interface User {
-  name: string
-  email: string
-}
+import type { UserInfo } from "../../services/user"
+import { cartApi } from "../../services/cart"
 
 const Header = () => {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<UserInfo | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [topSearches] = useState<string[]>(getTopSearches())
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications)
+  const [cartItemCount, setCartItemCount] = useState(0)
   const navigate = useNavigate()
   const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
+
     if (storedUser) {
       setUser(JSON.parse(storedUser))
+
+      cartApi
+        .getCartItemCount()
+        .then((res) => {
+          if (res.isSuccess) {
+            setCartItemCount(res.value ?? 0)
+          }
+        })
+        .catch(() => { })
     }
 
     // Lắng nghe event khi user đăng nhập
@@ -146,9 +154,9 @@ const Header = () => {
             <>
               <Link to="/profile" className="user-profile-link">
                 <div className="user-avatar-small">
-                  <img src="https://picsum.photos/40/40?avatar" alt={user.name} />
+                  <img src="https://picsum.photos/40/40?avatar" alt={user.fullName} />
                 </div>
-                <span className="user-name-header">{user.name}</span>
+                <span className="user-name-header">{user.fullName}</span>
               </Link>
               <span onClick={handleLogout} className="logout-link">
                 Đăng xuất
@@ -257,7 +265,7 @@ const Header = () => {
           <div onClick={() => navigate("/cart")} style={{ cursor: "pointer" }}>
             <CartIcon />
           </div>
-          <span className="cart-badge">3</span>
+          <span className="cart-badge">{cartItemCount}</span>
         </div>
       </div>
     </header>

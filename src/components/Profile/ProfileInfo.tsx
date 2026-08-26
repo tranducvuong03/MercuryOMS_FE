@@ -1,10 +1,7 @@
-interface User {
-  name: string
-  email: string
-}
+import type { UserInfo } from "../../services/user"
 
 interface ProfileInfoProps {
-  user: User
+  user: UserInfo
 }
 
 const ProfileInfo = ({ user }: ProfileInfoProps) => {
@@ -14,19 +11,11 @@ const ProfileInfo = ({ user }: ProfileInfoProps) => {
       <div className="info-form">
         <div className="form-group">
           <label>Họ và tên</label>
-          <input type="text" value={user.name} disabled />
+          <input type="text" value={user.fullName} disabled />
         </div>
         <div className="form-group">
           <label>Email</label>
           <input type="email" value={user.email} disabled />
-        </div>
-        <div className="form-group">
-          <label>Số điện thoại</label>
-          <input type="tel" placeholder="Nhập số điện thoại" />
-        </div>
-        <div className="form-group">
-          <label>Địa chỉ</label>
-          <input type="text" placeholder="Nhập địa chỉ" />
         </div>
         <button className="btn-update">Cập nhật thông tin</button>
       </div>

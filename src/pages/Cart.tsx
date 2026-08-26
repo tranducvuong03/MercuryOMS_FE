@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import "./Cart.css"
 import { useState, useEffect } from "react"
 import { FaTrash, FaMinus, FaPlus } from "react-icons/fa"
-import { cartApi } from "../services/cartApi"
+import { cartApi } from "../services/cart"
 import type { CartItem } from "../types/cart"
 
 const Cart = () => {
@@ -185,7 +185,16 @@ const Cart = () => {
             <span>{finalTotal.toLocaleString()}đ</span>
           </div>
 
-          <button className="btn-checkout" onClick={() => navigate("/checkout")}>Mua hàng</button>
+          <button
+            className="btn-checkout"
+            disabled={cartItems.length === 0}
+            onClick={() => {
+              if (cartItems.length === 0) return
+              navigate("/checkout")
+            }}
+          >
+            Mua hàng
+          </button>
         </div>
 
       </div>

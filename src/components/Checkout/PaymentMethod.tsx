@@ -1,4 +1,4 @@
-import { FaCreditCard, FaTruck, FaUniversity, FaMobileAlt } from "react-icons/fa"
+import { FaCreditCard, FaTruck } from "react-icons/fa"
 import "./PaymentMethod.css"
 
 interface PaymentMethodProps {
@@ -6,26 +6,23 @@ interface PaymentMethodProps {
   onMethodChange: (method: string) => void
 }
 
-const PaymentMethod = ({ selectedMethod, onMethodChange }: PaymentMethodProps) => {
+const PaymentMethod = ({
+  selectedMethod,
+  onMethodChange,
+}: PaymentMethodProps) => {
   const paymentMethods = [
     {
       id: "cod",
       icon: FaTruck,
       title: "Thanh toán khi nhận hàng (COD)",
-      description: "Thanh toán bằng tiền mặt khi nhận hàng"
+      description: "Thanh toán bằng tiền mặt khi nhận hàng",
     },
     {
-      id: "bank",
-      icon: FaUniversity,
-      title: "Chuyển khoản ngân hàng",
-      description: "Chuyển khoản trực tiếp đến tài khoản của chúng tôi"
+      id: "vnpay",
+      icon: FaCreditCard,
+      title: "Thanh toán qua VNPay",
+      description: "Thanh toán bằng VNPay (ATM, QR, Visa, MasterCard...)",
     },
-    {
-      id: "ewallet",
-      icon: FaMobileAlt,
-      title: "Ví điện tử",
-      description: "Thanh toán bằng Momo, ZaloPay hoặc các ví khác"
-    }
   ]
 
   return (
@@ -46,10 +43,12 @@ const PaymentMethod = ({ selectedMethod, onMethodChange }: PaymentMethodProps) =
               checked={selectedMethod === id}
               onChange={(e) => onMethodChange(e.target.value)}
             />
+
             <span className="payment-label">
               <span className="payment-icon">
                 <Icon />
               </span>
+
               <span className="payment-text">
                 <strong>{title}</strong>
                 <small>{description}</small>

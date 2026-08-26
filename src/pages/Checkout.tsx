@@ -15,6 +15,9 @@ import {
 } from "../components/Checkout"
 import type { CartItem } from "../types/cart"
 import type { Address } from "../types/address"
+import { paymentApi, PaymentMethods } from "../services/payment"
+import { orderApi } from "../services/orders"
+import { addressApi } from "../services/address"
 
 interface Toast {
   id: number
@@ -27,53 +30,29 @@ const Checkout = () => {
   const [user, setUser] = useState<{ name: string; email: string } | null>(null)
   const [toasts, setToasts] = useState<Toast[]>([])
   const [isShowAddressModal, setIsShowAddressModal] = useState(false)
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null)
 
-  // Default cart items
-  const defaultCartItems: CartItem[] = [
-    {
-      productId: "1",
-      variantId: "1-1",
-      productName: "Áo thun nam cổ tròn",
-      price: 250000,
-      quantity: 1,
-      image: "https://via.placeholder.com/150",
-      color: "Đen",
-      size: "M",
-      stock: 10
-    },
-    {
-      productId: "2",
-      variantId: "2-1",
-      productName: "Quần jean nam",
-      price: 450000,
-      quantity: 1,
-      image: "https://via.placeholder.com/150",
-      color: "Xanh dương",
-      size: "32",
-      stock: 15
-    }
-  ]
-
-  // Initial address state - using default address or empty
+  // State
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [address, setAddress] = useState<Address>({
-    id: 0,
-    label: "Nhà riêng",
-    recipient: user?.name || "",
+    id: "",
+    label: "",
+    receiverName: "",
     phone: "",
     street: "",
-    district: "",
     city: "",
+    district: "",
     province: "",
-    isDefault: true
+    isDefault: false,
   })
 
   // Checkout states
-  const [cartItems] = useState<CartItem[]>(defaultCartItems)
   const [selectedVoucher, setSelectedVoucher] = useState<VoucherOption | null>(null)
   const [paymentMethod, setPaymentMethod] = useState("cod")
   const [shippingMethod, setShippingMethod] = useState("standard")
   const [shipperMessage, setShipperMessage] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isRedirectingToPayment, setIsRedirectingToPayment] = useState(false)
 
   // Initialize
   useEffect(() => {
@@ -81,18 +60,69 @@ const Checkout = () => {
   }, [])
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (!storedUser) {
-      navigate("/login")
-      return
+    const init = async () => {
+      const storedUser = localStorage.getItem("user")
+
+      if (!storedUser) {
+        navigate("/login")
+        return
+      }
+
+      const userData = JSON.parse(storedUser)
+      setUser(userData)
+
+      try {
+        // 1. Lấy địa chỉ mặc định
+        const addressRes = await addressApi.getDefaultAddress()
+        if (addressRes.isSuccess && addressRes.value) {
+          setAddress(addressRes.value)
+        }
+
+        // 2. Lấy đơn hàng pending từ API
+        const pendingRes = await orderApi.getPending()
+
+        if (!pendingRes.isSuccess || !pendingRes.value?.length) {
+          return
+        }
+
+        const latestPendingOrder = pendingRes.value[0]
+        setPendingOrderId(latestPendingOrder.id)
+
+        // Map items từ PendingOrderResponse sang CartItem UI
+        if (latestPendingOrder.items) {
+          const mappedItems: CartItem[] = latestPendingOrder.items.map((item) => ({
+            productId: item.productId,
+            variantId: item.productVariantId,
+            productName: item.productName,
+            price: item.unitPrice,
+            quantity: item.quantity,
+            image: "https://via.placeholder.com/150",
+            color: "",
+            size: "",
+            stock: 99
+          }))
+          setCartItems(mappedItems)
+        }
+
+      } catch (err) {
+        console.error("Lỗi khi khởi tạo Checkout:", err)
+      }
     }
-    const userData = JSON.parse(storedUser)
-    setUser(userData)
-    setAddress((prev) => ({
-      ...prev,
-      recipient: userData.name || ""
-    }))
+
+    init()
   }, [navigate])
+
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      if (isRedirectingToPayment) {
+        setIsRedirectingToPayment(false)
+        setIsProcessing(false)
+      }
+    }
+
+    window.addEventListener("focus", handleWindowFocus)
+    return () => window.removeEventListener("focus", handleWindowFocus)
+  }, [isRedirectingToPayment])
 
   // Toast notification
   const showToast = (type: Toast["type"], message: string) => {
@@ -110,7 +140,7 @@ const Checkout = () => {
 
   // Calculate prices
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  
+
   const getShippingFee = () => {
     const baseShippingFee = 29000
     switch (shippingMethod) {
@@ -133,8 +163,6 @@ const Checkout = () => {
       discount = Math.floor(subtotal * (selectedVoucher.discount / 100))
     }
   }
-
-  const total = subtotal + shippingFee - discount
 
   // Handlers
   const handleApplyVoucher = (code: string) => {
@@ -163,36 +191,54 @@ const Checkout = () => {
   }
 
   const handlePlaceOrder = async () => {
-    if (!address.recipient || !address.phone || !address.street || !address.city) {
+    if (
+      !address ||
+      !address.receiverName ||
+      !address.phone ||
+      !address.street ||
+      !address.city
+    ) {
       showToast("warning", "Vui lòng cập nhật đầy đủ địa chỉ giao hàng")
       return
     }
 
     setIsProcessing(true)
-    // Simulate API call
-    setTimeout(() => {
-      const order = {
-        id: `ORD-${Date.now()}`,
-        items: cartItems,
-        shipping: address,
-        shipper_message: shipperMessage,
-        voucher: selectedVoucher,
-        payment_method: paymentMethod,
-        shipping_method: shippingMethod,
-        subtotal,
-        discount,
-        shippingFee,
-        total,
-        createdAt: new Date()
+
+    try {
+      // 1. Tái sử dụng pendingOrderId nếu có, ngược lại tạo order mới
+      let orderId = pendingOrderId
+
+      if (!orderId) {
+        orderId = await orderApi.createOrder()
       }
 
-      localStorage.setItem("lastOrder", JSON.stringify(order))
-      showToast("success", `Đặt hàng thành công! Mã: ${order.id}`)
-      setTimeout(() => {
-        navigate("/tracking")
-      }, 1500)
+      // 2. Tạo Payment
+      const payment = await paymentApi.createPayment(
+        orderId,
+        paymentMethod === "cod"
+          ? PaymentMethods.COD
+          : PaymentMethods.VNPay
+      )
+
+      // 3. Nếu có URL thanh toán thì chuyển sang cổng thanh toán
+      if (payment.paymentUrl) {
+        setIsRedirectingToPayment(true)
+        window.open(payment.paymentUrl, "_blank", "noopener,noreferrer")
+        showToast("info", "Đang chuyển sang cổng thanh toán...")
+        return
+      }
+
+      // 4. COD hoặc phương thức không cần redirect
+      showToast("success", "Đặt hàng thành công")
+
+    } catch (err) {
+      showToast(
+        "error",
+        err instanceof Error ? err.message : "Đặt hàng thất bại"
+      )
+    } finally {
       setIsProcessing(false)
-    }, 1500)
+    }
   }
 
   if (!user) {
@@ -212,6 +258,16 @@ const Checkout = () => {
           </div>
         ))}
       </div>
+
+      {(isProcessing || isRedirectingToPayment) && (
+        <div className="payment-loading-overlay" role="status" aria-live="polite">
+          <div className="payment-loading-card">
+            <div className="payment-loading-spinner" />
+            <h3>Đang chuyển sang cổng thanh toán</h3>
+            <p>Vui lòng chờ trong giây lát...</p>
+          </div>
+        </div>
+      )}
 
       <div className="checkout-header">
         <h1>Tiến hành thanh toán</h1>
@@ -257,7 +313,7 @@ const Checkout = () => {
             discount={discount}
             selectedVoucher={selectedVoucher}
             onPlaceOrder={handlePlaceOrder}
-            isProcessing={isProcessing}
+            isProcessing={isProcessing || isRedirectingToPayment}
           />
         </div>
       </div>

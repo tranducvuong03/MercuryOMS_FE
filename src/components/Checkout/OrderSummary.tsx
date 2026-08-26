@@ -54,7 +54,7 @@ const OrderSummary = ({
       </div>
 
       <button onClick={onPlaceOrder} disabled={isProcessing} className="btn-place-order">
-        {isProcessing ? "Đang xử lý..." : `Đặt hàng - ${total.toLocaleString("vi-VN")}đ`}
+        {isProcessing ? "Đang xử lý..." : `Thanh toán - ${total.toLocaleString("vi-VN")}đ`}
       </button>
 
       <div className="policy-info">

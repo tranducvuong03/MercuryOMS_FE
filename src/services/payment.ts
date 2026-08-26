@@ -1,120 +1,79 @@
-// Payment API
-// Sử dụng cho sau này thay thế dữ liệu mẫu
-// Bỏ comment khi sẵn sàng tích hợp backend
+import { request } from "./apiClient"
+import type { Result } from "../types/result"
 
-import { API_BASE_URL, getHeaders } from "./apiClient"
+export const PaymentMethods = {
+    COD: 0,
+    VNPay: 1,
+} as const
 
-// Thanh toán đơn hàng
-// export const processPayment = async (orderId: string, paymentData: any) => {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/payments/process`, {
-//       method: "POST",
-//       headers: getHeaders(true),
-//       body: JSON.stringify({
-//         orderId,
-//         paymentMethod: paymentData.paymentMethod,
-//         amount: paymentData.amount,
-//         currency: paymentData.currency || "VND",
-//         ...paymentData
-//       })
-//     })
-//     if (!response.ok) throw new Error("Payment failed")
-//     const data = await response.json()
-//     return data
-//   } catch (error) {
-//     console.error("Error processing payment:", error)
-//     throw error
-//   }
-// }
+export type PaymentMethod =
+    (typeof PaymentMethods)[keyof typeof PaymentMethods]
 
-// Lấy lịch sử thanh toán
-// export const fetchPaymentHistory = async (userId: string, page = 1, limit = 10) => {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/payments/history?userId=${userId}&page=${page}&limit=${limit}`, {
-//       headers: getHeaders(true)
-//     })
-//     if (!response.ok) throw new Error("Failed to fetch payment history")
-//     const data = await response.json()
-//     return data
-//   } catch (error) {
-//     console.error("Error fetching payment history:", error)
-//     throw error
-//   }
-// }
+export type CreatePaymentResponse = {
+    paymentId: string
+    paymentUrl?: string
+}
 
-// Lấy chi tiết thanh toán
-// export const fetchPaymentDetail = async (paymentId: string) => {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
-//       headers: getHeaders(true)
-//     })
-//     if (!response.ok) throw new Error("Failed to fetch payment detail")
-//     const data = await response.json()
-//     return data
-//   } catch (error) {
-//     console.error("Error fetching payment detail:", error)
-//     throw error
-//   }
-// }
+export type PaymentResponse = {
+    id: string
+    orderId: string
+    amount: number
+    method: PaymentMethod
+    status: number
+}
 
-// Hoàn tiền đơn hàng
-// export const refundOrder = async (orderId: string, reason: string) => {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/payments/refund`, {
-//       method: "POST",
-//       headers: getHeaders(true),
-//       body: JSON.stringify({ orderId, reason })
-//     })
-//     if (!response.ok) throw new Error("Refund failed")
-//     const data = await response.json()
-//     return data
-//   } catch (error) {
-//     console.error("Error processing refund:", error)
-//     throw error
-//   }
-// }
+export const paymentApi = {
+    createPayment: async (
+        orderId: string,
+        method: PaymentMethod
+    ) => {
+        const res = await request<Result<CreatePaymentResponse>>(
+            `/payments?orderId=${orderId}&method=${method}`,
+            {
+                method: "POST",
+                auth: true,
+            }
+        )
 
-// Lấy danh sách phương thức thanh toán
-// export const fetchPaymentMethods = async () => {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/payments/methods`)
-//     if (!response.ok) throw new Error("Failed to fetch payment methods")
-//     const data = await response.json()
-//     return data
-//   } catch (error) {
-//     console.error("Error fetching payment methods:", error)
-//     throw error
-//   }
-// }
+        if (!res.isSuccess || !res.value) {
+            throw new Error(res.message || "Create payment failed")
+        }
 
-// Thêm phương thức thanh toán
-// export const addPaymentMethod = async (userId: string, methodData: any) => {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/users/${userId}/payment-methods`, {
-//       method: "POST",
-//       headers: getHeaders(true),
-//       body: JSON.stringify(methodData)
-//     })
-//     if (!response.ok) throw new Error("Failed to add payment method")
-//     const data = await response.json()
-//     return data
-//   } catch (error) {
-//     console.error("Error adding payment method:", error)
-//     throw error
-//   }
-// }
+        return res.value
+    },
 
-// Xóa phương thức thanh toán
-// export const removePaymentMethod = async (userId: string, methodId: string) => {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/users/${userId}/payment-methods/${methodId}`, {
-//       method: "DELETE",
-//       headers: getHeaders(true)
-//     })
-//     if (!response.ok) throw new Error("Failed to remove payment method")
-//     return true
-//   } catch (error) {
-//     console.error("Error removing payment method:", error)
-//     throw error
-//   }
-// }
+    getByOrderId: async (orderId: string) => {
+        const res = await request<Result<PaymentResponse>>(
+            `/payments/order/${orderId}`,
+            {
+                method: "GET",
+                auth: true,
+            }
+        )
+
+        if (!res.isSuccess || !res.value) {
+            throw new Error(res.message || "Payment not found")
+        }
+
+        return res.value
+    },
+
+    vnPayReturn: async (
+        params: Record<string, string>
+    ) => {
+        const query = new URLSearchParams(params).toString()
+
+        const res = await request<Result<void>>(
+            `/payments/vnpay-return?${query}`,
+            {
+                method: "GET",
+            }
+        )
+
+        if (!res.isSuccess) {
+            throw new Error(res.message || "VNPay payment failed")
+        }
+
+        return res
+    },
+}

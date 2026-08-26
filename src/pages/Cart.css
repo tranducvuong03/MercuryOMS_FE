@@ -264,9 +264,17 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.btn-checkout:hover {
+.btn-checkout:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 14px 30px rgba(245, 61, 45, 0.24);
+}
+
+.btn-checkout:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
 }
 
 .cart-benefits {

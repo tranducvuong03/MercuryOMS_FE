@@ -20,11 +20,11 @@ const ProductSection = () => {
       sorted.sort((a, b) => b.sold - a.sold)
     } else if (activeTab === "newest") {
       // Sắp xếp theo ngày tạo mới nhất
-      sorted.sort((a, b) => {
-        const dateA = new Date(a.createdDate || "").getTime()
-        const dateB = new Date(b.createdDate || "").getTime()
-        return dateB - dateA
-      })
+      // sorted.sort((a, b) => {
+      //   const dateA = new Date(a.createdDate || "").getTime()
+      //   const dateB = new Date(b.createdDate || "").getTime()
+      //   return dateB - dateA
+      // })
     }
 
     setDisplayProducts(sorted)

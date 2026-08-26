@@ -1,7 +1,8 @@
 export interface Address {
-  id: number
+  id: string
   label: string
-  recipient: string
+  receiverName: string
+  recipient?: string
   phone: string
   street: string
   district: string
